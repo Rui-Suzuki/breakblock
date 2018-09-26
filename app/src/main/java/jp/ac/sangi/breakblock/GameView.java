@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 
+import java.util.ArrayList;
+
 public class GameView extends TextureView
         implements TextureView.SurfaceTextureListener,
         View.OnTouchListener {
@@ -17,6 +19,8 @@ public class GameView extends TextureView
     volatile private boolean isRunnable;
     volatile private float touchedX;
     volatile private float touchedY;
+
+    private ArrayList<Block> blockList; // ブロック管理用
 
     /**
      * コンストラクタ
@@ -31,16 +35,19 @@ public class GameView extends TextureView
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        readyObjects(width, height);
     }
 
     @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
-
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
+        readyObjects(width, height);
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        return true;
+        synchronized (this) {
+            return true;
+        }
     }
 
     @Override
@@ -59,13 +66,20 @@ public class GameView extends TextureView
                 Paint paint = new Paint();
                 paint.setColor(Color.RED);
                 paint.setStyle(Paint.Style.FILL);
-                while(isRunnable) {
+                while(true) {
+                    synchronized (GameView.this) {
+                        if(!isRunnable) {
+                            break;
+                        }
+                    }
                     Canvas canvas = lockCanvas();
                     if(canvas == null) {
                         continue;
                     }
                     canvas.drawColor(Color.BLACK);
-                    canvas.drawCircle(touchedX,touchedY,50, paint);
+                    for(Block item : blockList) {
+                        item.draw(canvas, paint);
+                    }
                     unlockCanvasAndPost(canvas);
                 }
 
@@ -88,5 +102,23 @@ public class GameView extends TextureView
         touchedX = event.getX();
         touchedY = event.getY();
         return true;
+    }
+
+    /*
+    // オブジェクトの準備
+    // 2018.09.26 R.Suzuki 新規作成
+    */
+    public void readyObjects(int width, int height) {
+        float blockWidth = width / 10;
+        float blockHeight = height / 20;
+
+        blockList = new ArrayList<Block>();
+        for(int i = 0; i < 100; i++) {
+            float blockTop = i / 10 * blockHeight;
+            float blockLeft = i % 10 * blockWidth;
+            float blockBottom = blockTop + blockHeight;
+            float blockRight = blockLeft + blockWidth;
+            blockList.add(new Block(blockTop, blockLeft, blockBottom, blockRight));
+        }
     }
 }
