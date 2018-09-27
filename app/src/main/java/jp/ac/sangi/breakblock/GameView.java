@@ -15,12 +15,12 @@ public class GameView extends TextureView
         implements TextureView.SurfaceTextureListener,
         View.OnTouchListener {
 
-    private Thread thread;  // ワーカースレッド
-    volatile private boolean isRunnable;
-    volatile private float touchedX;
-    volatile private float touchedY;
+    private Thread thread;                   // ワーカースレッド
+    volatile private boolean isRunnable;   // 動作状態
+    volatile private float touchedX;       // タッチ座標X
+    volatile private float touchedY;       // タッチ座標Y
 
-    private ArrayList<Block> blockList; // ブロック管理用
+    private ArrayList<Block> blockList;     // ブロック管理用
 
     /**
      * コンストラクタ
@@ -56,31 +56,31 @@ public class GameView extends TextureView
     }
 
     /*
-    // スレッドのスタート
+    // 描画用スレッドのスタート
     // 2018.09.19 R.Suzuki 新規作成
     */
     public void start() {
         thread = new Thread(new Runnable() {
             @Override
-            public void run() {
+            public void run() {   // スレッド生成
                 Paint paint = new Paint();
-                paint.setColor(Color.RED);
-                paint.setStyle(Paint.Style.FILL);
-                while(true) {
-                    synchronized (GameView.this) {
-                        if(!isRunnable) {
+                paint.setColor(Color.RED);          // 色は赤
+                paint.setStyle(Paint.Style.FILL);   // 塗りつぶし
+                while(true) {                       // メインループ(ワーカースレッド)
+                    synchronized (GameView.this) { //
+                        if(!isRunnable) {           // 動作中であれば
                             break;
                         }
                     }
-                    Canvas canvas = lockCanvas();
+                    Canvas canvas = lockCanvas();     // 画面を取得
                     if(canvas == null) {
                         continue;
                     }
                     canvas.drawColor(Color.BLACK);
-                    for(Block item : blockList) {
+                    for(Block item : blockList) {   // ブロックを数分配置
                         item.draw(canvas, paint);
                     }
-                    unlockCanvasAndPost(canvas);
+                    unlockCanvasAndPost(canvas);      // 画面に反映
                 }
 
             }
