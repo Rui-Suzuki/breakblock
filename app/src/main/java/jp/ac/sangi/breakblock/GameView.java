@@ -20,7 +20,10 @@ public class GameView extends TextureView
     volatile private float touchedX;       // タッチ座標X
     volatile private float touchedY;       // タッチ座標Y
 
-    private ArrayList<Block> blockList;     // ブロック管理用
+    private ArrayList<DrawableItem> blockList; // ブロック管理用
+
+    private Pad pad;                        // パッド
+    private float padHalfWidth;            // 横幅半分
 
     /**
      * コンストラクタ
@@ -77,7 +80,10 @@ public class GameView extends TextureView
                         continue;
                     }
                     canvas.drawColor(Color.BLACK);
-                    for(Block item : blockList) {   // ブロックを数分配置
+                    float padLeft = touchedX - padHalfWidth;
+                    float padRight = touchedX + padHalfWidth;
+                    pad.setLeftRight(padLeft, padRight);
+                    for(DrawableItem item : blockList) {   // ブロックを数分配置
                         item.draw(canvas, paint);
                     }
                     unlockCanvasAndPost(canvas);      // 画面に反映
@@ -112,7 +118,7 @@ public class GameView extends TextureView
         float blockWidth = width / 10;
         float blockHeight = height / 20;
 
-        blockList = new ArrayList<Block>();
+        blockList = new ArrayList<DrawableItem>();
         for(int i = 0; i < 100; i++) {
             float blockTop = i / 10 * blockHeight;
             float blockLeft = i % 10 * blockWidth;
@@ -120,5 +126,8 @@ public class GameView extends TextureView
             float blockRight = blockLeft + blockWidth;
             blockList.add(new Block(blockTop, blockLeft, blockBottom, blockRight));
         }
+        pad = new Pad(height * 0.8f, height * 0.85f);
+        blockList.add(pad);
+        padHalfWidth = width / 10;
     }
 }

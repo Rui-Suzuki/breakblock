@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
-public class Block {
+public class Block implements DrawableItem {
     private final float top;        // ブロック上
     private final float left;       // ブロック左
     private final float bottom;     // ブロック下
